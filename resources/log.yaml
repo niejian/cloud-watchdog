@@ -1,0 +1,6 @@
+logName: cloud-watchdog.log
+logPath: logs # 相对于项目的路径信息
+logLevel: 0 #日志级别(debug:-1, info:0, warn: 1, error:2)
+maxSize: 100
+maxBackups: 30
+maxAge: 30

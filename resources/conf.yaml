@@ -1,0 +1,19 @@
+log:
+  logName: cloud-watchdog.log
+  logPath: logs # 相对于项目的路径信息
+  logLevel: 0 #日志级别(debug:-1, info:0, warn: 1, error:2)
+  maxSize: 100
+  maxBackups: 30
+  maxAge: 30
+mysql:
+  username: apollo
+  password: 'qq123123'
+  path: '192.168.242.105:3306'
+  db-name: 'ginVueAdmin'
+  config: 'charset=utf8mb4&parseTime=True&loc=Local'
+  max-idle-conns: 10
+  max-open-conns: 10
+  log-mode: false
+wx:
+  corpid: 'wx36ef368cf28caea0'
+  agentid: '1000079'
