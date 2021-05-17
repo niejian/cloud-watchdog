@@ -9,4 +9,6 @@ package initialize
 func DoInitialize()  {
 	// mysql 初始化
 	MysqlInitialize()
+	GlobalConstInitialize()
+	
 }

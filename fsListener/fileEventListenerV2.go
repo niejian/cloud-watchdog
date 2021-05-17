@@ -8,6 +8,7 @@ import (
 	"cloud-watchdog/logappender"
 	"cloud-watchdog/zapLog"
 	"github.com/fsnotify/fsnotify"
+	"github.com/patrickmn/go-cache"
 	"go.uber.org/zap"
 	"strings"
 	"sync"
@@ -19,7 +20,7 @@ import (
 //@Date 2021-04-28 14:17:12
 //@param logDir
 //@param appName
-func ListenAppLog() {
+func ListenAppLog(c *cache.Cache) {
 	// 缓存
 	var fileMap sync.Map
 	var namespaceMap sync.Map
@@ -32,8 +33,8 @@ func ListenAppLog() {
 	defer watcher.Close()
 
 	// 监听整个目录
-	err = watcher.Add(global.K8S_LOG_DIR)
-	zapLog.LOGGER().Info("监听文件：" + global.K8S_LOG_DIR)
+	err = watcher.Add(*global.K8S_LOG_DIR)
+	zapLog.LOGGER().Info("监听文件：" + *global.K8S_LOG_DIR)
 	if err != nil {
 		zapLog.LOGGER().Error("添加目录监听失败，", zap.String("err", err.Error()))
 	}
@@ -99,7 +100,7 @@ func ListenAppLog() {
 								}
 							}()
 
-							logappender.LogAppender(namespace, appName, fileName)
+							logappender.LogAppender(namespace, appName, fileName, c)
 
 						}()
 					}

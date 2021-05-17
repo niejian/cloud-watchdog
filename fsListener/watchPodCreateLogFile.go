@@ -42,7 +42,7 @@ func WatchPodLogFile(fileName string) (*model.ErrorLogAlterConfig, error) {
 		}
 	}
 	// 从数据库中获取配置信息
-	global.GLOBAL_DB.Table(global.LOG_ALTER_NAME).
+	global.GLOBAL_DB.Table(*global.LOG_ALTER_NAME).
 		Where("namespace = ? and app_name = ?", namespace, appName).
 		First(&errorLogAlterConfig)
 

@@ -17,14 +17,14 @@ import (
 //@return error
 func ListAllLogAlterConf() ([]*conf.AlterConf, error) {
 	var datas []*conf.AlterConf
-	global.GLOBAL_DB.Table(global.LOG_ALTER_NAME).Find(datas)
+	global.GLOBAL_DB.Table(*global.LOG_ALTER_NAME).Find(datas)
 	return datas, nil
 }
 
 func ListLogAlterConfByAppNameAndNamespace(ns, appName string) []*conf.AlterConf  {
 	var datas []model.ErrorLogAlterConfig
 	var confs []*conf.AlterConf
-	global.GLOBAL_DB.Table(global.LOG_ALTER_NAME).
+	global.GLOBAL_DB.Table(*global.LOG_ALTER_NAME).
 		Where("namespace = ? and app_name = ?", ns, appName).Find(&datas)
 
 	if len(datas) <= 0 {

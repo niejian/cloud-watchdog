@@ -9,6 +9,7 @@ type SysConfig struct {
 	Mysql         Mysql         `mapstructure:"mysql" json:"mysql" yaml:"mysql"`
 	Log           LogConfig     `mapstructure:"log" json:"log" yaml:"log"`
 	WxChatMsgConf WxChatMsgConf `mapstructure:"wx" json:"wx" yaml:"wx"`
+	GlobalConst GlobalConst `mapstructure:"globalConst" json:"globalConst" yaml:"globalConst"`
 }
 
 type Mysql struct {
@@ -33,4 +34,10 @@ type AlterConf struct {
 	Errs      []string `mapstructure:"errs" json:"errs" yaml:"errs"`
 	AppName   string   `mapstructure:"appName" json:"appName" yaml:"appName"`
 	Namespace string   `mapstructure:"namespace" json:"namespace" yaml:"namespace"`
+}
+
+type GlobalConst struct {
+	// 日志监听路径
+	K8sLogDir string `mapstructure:"k8sLogDir" json:"k8sLogDir" yaml:"k8sLogDir"`
+	LogAlterName string `mapstructure:"logAlterName" json:"logAlterName" yaml:"logAlterName"`
 }

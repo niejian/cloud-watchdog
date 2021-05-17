@@ -47,8 +47,8 @@ func GetLogAlterConfByFileName(namespace, appName string) (*conf.AlterConf, erro
 //@return string
 //@return error
 func GetAppNameByLogFileName(fileName string) (string, string, error)  {
-	if strings.Contains(fileName, global.K8S_LOG_DIR) {
-		fileName = strings.ReplaceAll(fileName,  global.K8S_LOG_DIR, "")
+	if strings.Contains(fileName, *global.K8S_LOG_DIR) {
+		fileName = strings.ReplaceAll(fileName,  *global.K8S_LOG_DIR, "")
 	}
 
 	fileName = strings.ReplaceAll(fileName, string(filepath.Separator), "")

@@ -4,11 +4,19 @@ package logappender
 
 import (
 	"cloud-watchdog/common"
+	"cloud-watchdog/config"
+	"cloud-watchdog/model"
 	"cloud-watchdog/zapLog"
-	"fmt"
 	"github.com/hpcloud/tail"
+	"github.com/patrickmn/go-cache"
 	"go.uber.org/zap"
+	"strings"
+	"sync"
+	"time"
 )
+
+var lock sync.Mutex
+
 
 //tailLogFile doc
 //@Description: 构造tail对象
@@ -27,7 +35,7 @@ func tailLogFile(logFileName string) (*tail.Tail, error) {
 	})
 }
 
-func LogAppender(namespace, appName, logFileName string) {
+func LogAppender(namespace, appName, logFileName string, c *cache.Cache) {
 	// 获取告警配置信息
 
 	zapLog.LOGGER().Debug("文件写操作：", zap.String("fileName", logFileName))
@@ -39,6 +47,7 @@ func LogAppender(namespace, appName, logFileName string) {
 		return
 	}
 
+	msg := ""
 	// tail -f
 	for line := range tailLog.Lines {
 		// 获取该文件的配置信息
@@ -52,18 +61,123 @@ func LogAppender(namespace, appName, logFileName string) {
 			continue
 		}
 		text := line.Text
-		fmt.Println("========》追踪到的日志信息：", text)
+		//fmt.Println("========》追踪到的日志信息：", text)
 		zapLog.LOGGER().Info("追踪到的日志信息: " + text, zap.String("logFile", logFileName))
-		zapLog.LOGGER().Debug("追踪到的日志信息: " + text)
-		common.SendMsgUtil(text, conf)
+		//k8s 日志
+		var k8sLogModel model.K8sLogModel
+		data, err := common.JSONStringFormat(text, k8sLogModel)
+		if err != nil {
+			zapLog.LOGGER().Error("json转换失败", zap.String("err", err.Error()))
+			continue
+		}
 
-		// 测试主动触发panic
-		//if time.Now().Nanosecond() % 2 == 0 {
-		//	panic("主动触发panic")
-		//}
+		//zapLog.LOGGER().Debug("追踪到的日志信息: " + text)
+
+		msg = convertErrMsg(data.Log, msg, conf)
+
+		ignores := conf.Ignores
+		errs := conf.Errs
+		hasExp := false
+		//custErr := ""
+
+
+		// 1秒没操作，判断是需要发送消息
+		time.AfterFunc(1*time.Second, func() {
+			//fmt.Println("时间静止500MS")
+			msg = strings.TrimSpace(msg)
+			if "" != msg && len(ignores) > 0 {
+				// 判断是否包含忽略异常
+				for _, ignoreEx := range ignores {
+
+					if strings.Contains(msg, ignoreEx) {
+						// 当前msg包含忽略异常关键字，将msg置空
+						msg = ""
+						zapLog.LOGGER().Info("当前消息包含忽略异常：%v, 不予发送 " +  ignoreEx)
+						break
+					}
+				}
+			}
+			if "" != msg {
+				for _, errTag := range errs {
+					//fmt.Printf("errTag：%v, newLine: %v \n", errTag, newLine)
+					// 含有异常关键字，发送提示告警
+					if strings.Contains(msg, errTag) {
+						//custErr = errTag
+						hasExp = true
+						break
+					}
+				}
+				if hasExp {
+					lock.Lock()
+					md5Str := common.Md5Str(msg)
+					_, isExist := c.Get(md5Str)
+					if !isExist {
+						c.Set(md5Str, "a", cache.DefaultExpiration)
+						common.SendMsgUtil(msg, conf)
+					}
+					lock.Unlock()
+				}else {
+					zapLog.LOGGER().Info("已发送该条告警消息")
+				}
+			}
+
+			msg = ""
+
+		})
+
+
 	}
 
 	// 等待上游发送消息至此管道，如果有值，就停止阻塞
 	//<-quitChan
+}
+
+//convertErrMsg doc
+//@Description: 组合告警消息
+//@Author niejian
+//@Date 2021-05-17 09:12:28
+//@param text
+//@param msg
+//@param conf
+func convertErrMsg(text, msg string, conf *config.AlterConf) string  {
+	errs := conf.Errs
+	newLine := ""
+
+	match := common.IsDatePrefix(text)
+	hasExp := false
+	for _, errTag := range errs {
+		//fmt.Printf("errTag：%v, newLine: %v \n", errTag, newLine)
+		// 含有异常关键字, 发送提示告警
+		if strings.Contains(newLine, errTag) {
+			hasExp = true
+			break
+		}
+
+	}
+
+	// log.error 输出方式，
+	if !hasExp && match && strings.Contains(newLine, common.ERROR_TAG) {
+		msg += newLine + "\n"
+	}
+
+	if hasExp && match {
+		if !strings.Contains(newLine, common.DEBUG_TAG) && !strings.Contains(newLine, common.WARN_TAG) {
+			msg += newLine + "\n"
+		}
+	}
+
+	if hasExp && !match {
+		//errContentChan <- newLine + "\n"
+		//writing <- true
+		msg += newLine + "\n"
+	}
+
+	if !hasExp && !match && !strings.Contains(newLine, common.DEBUG_TAG) {
+		//errContentChan <- newLine + "\n"
+		//writing <- true
+		msg += newLine + "\n"
+	}
+
+	return msg
 }
 
