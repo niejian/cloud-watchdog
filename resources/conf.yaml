@@ -18,5 +18,8 @@ wx:
   corpid: 'wx36ef368cf28caea0'
   agentid: '1000079'
 globalConst:
-  k8sLogDir: '/Users/a/logs/'
+  dev:
+    k8sLogDir: '/Users/a/logs/'
+  pro:
+    k8sLogDir: '/var/log/containers/'
   logAlterName: 'log_alter_conf'

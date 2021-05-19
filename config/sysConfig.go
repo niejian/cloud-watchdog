@@ -38,6 +38,15 @@ type AlterConf struct {
 
 type GlobalConst struct {
 	// 日志监听路径
-	K8sLogDir string `mapstructure:"k8sLogDir" json:"k8sLogDir" yaml:"k8sLogDir"`
+	Dev Dev `mapstructure:"dev" json:"dev" yaml:"dev"`
+	Pro Pro `mapstructure:"pro" json:"pro" yaml:"pro"`
 	LogAlterName string `mapstructure:"logAlterName" json:"logAlterName" yaml:"logAlterName"`
+}
+
+type Dev struct {
+	K8sLogDir string `mapstructure:"k8sLogDir" json:"k8sLogDir" yaml:"k8sLogDir"`
+}
+
+type Pro struct {
+	K8sLogDir string `mapstructure:"k8sLogDir" json:"k8sLogDir" yaml:"k8sLogDir"`
 }
