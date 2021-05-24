@@ -6,6 +6,7 @@ import (
 	"cloud-watchdog/zapLog"
 	"context"
 	"flag"
+	"fmt"
 	"go.uber.org/zap"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -77,3 +78,27 @@ func DescribePod(podName, ns string) (*v1.Pod, error) {
 //	}
 //	return de
 //}
+
+func ListNodes()  {
+	nodes, err := clientSet.CoreV1().Nodes().List(context.TODO(), metav1.ListOptions{})
+	if err != nil {
+		zapLog.LOGGER().Error("获取k8s节点失败", zap.String("err", err.Error()))
+	}
+	for _, node := range nodes.Items {
+		addresses := node.Status.Addresses
+		//fmt.Printf("node addresses: %v \n", addresses)
+
+		//isWorkerNode := false
+		var addressType v1.NodeAddressType
+		var addressName string
+
+		for _, address := range addresses {
+			addressType = address.Type
+			addressName = address.Address
+
+			if v1.NodeInternalIP == addressType {
+				fmt.Printf("node ip: %v \n", addressName)
+			}
+		}
+	}
+}

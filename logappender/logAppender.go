@@ -36,10 +36,17 @@ func tailLogFile(logFileName string) (*tail.Tail, error) {
 }
 
 func LogAppender(namespace, appName, logFileName string, c *cache.Cache) {
-	// 获取告警配置信息
+	zapLog.LOGGER().Info("文件写操作：", zap.String("fileName", logFileName))
+	//quitChan := make(chan bool, 1)
+	go func() {
+		tailLog(logFileName, namespace, appName, c)
+	}()
 
-	zapLog.LOGGER().Debug("文件写操作：", zap.String("fileName", logFileName))
+	// 等待上游发送消息至此管道，如果有值，就停止阻塞
+	//<-quitChan
+}
 
+func tailLog(logFileName, namespace, appName string, c *cache.Cache)  {
 
 	tailLog, err := tailLogFile(logFileName)
 	if nil != err {
@@ -53,11 +60,12 @@ func LogAppender(namespace, appName, logFileName string, c *cache.Cache) {
 		// 获取该文件的配置信息
 		conf, err := common.GetLogAlterConfByFileName(namespace, appName)
 		if nil != err {
-			zapLog.LOGGER().Error("err", zap.String("err", err.Error()))
+			zapLog.LOGGER().Debug("err", zap.String("namespace", namespace),
+				zap.String("appname", appName), zap.String("err", err.Error()))
 			continue
 		}
 		if nil == conf {
-			zapLog.LOGGER().Error("配置为空")
+			zapLog.LOGGER().Debug("配置为空")
 			continue
 		}
 		text := line.Text
@@ -71,6 +79,7 @@ func LogAppender(namespace, appName, logFileName string, c *cache.Cache) {
 			continue
 		}
 
+
 		//zapLog.LOGGER().Debug("追踪到的日志信息: " + text)
 
 		msg = convertErrMsg(data.Log, msg, conf)
@@ -79,6 +88,8 @@ func LogAppender(namespace, appName, logFileName string, c *cache.Cache) {
 		errs := conf.Errs
 		hasExp := false
 		//custErr := ""
+		zapLog.LOGGER().Info("", zap.String("msg", msg))
+
 
 
 		// 1秒没操作，判断是需要发送消息
@@ -89,10 +100,10 @@ func LogAppender(namespace, appName, logFileName string, c *cache.Cache) {
 				// 判断是否包含忽略异常
 				for _, ignoreEx := range ignores {
 
-					if strings.Contains(msg, ignoreEx) {
+					if "" != ignoreEx && strings.Contains(msg, ignoreEx) {
 						// 当前msg包含忽略异常关键字，将msg置空
 						msg = ""
-						zapLog.LOGGER().Info("当前消息包含忽略异常：%v, 不予发送 " +  ignoreEx)
+						zapLog.LOGGER().Info("当前消息包含忽略异常, 不予发送 ",  zap.String("ignore", ignoreEx))
 						break
 					}
 				}
@@ -107,13 +118,14 @@ func LogAppender(namespace, appName, logFileName string, c *cache.Cache) {
 						break
 					}
 				}
-				if hasExp {
+				if hasExp && "" != msg {
 					lock.Lock()
 					md5Str := common.Md5Str(msg)
 					_, isExist := c.Get(md5Str)
 					if !isExist {
-						c.Set(md5Str, "a", cache.DefaultExpiration)
-						common.SendMsgUtil(msg, conf)
+						c.Set(md5Str, "a", time.Minute)
+						title := "应用名称：" + appName + "\n时间：" + common.FormatDate("2006-01-02 15:04:05") + "\n"
+						common.SendMsgUtil(title + msg, conf)
 					}
 					lock.Unlock()
 				}else {
@@ -127,9 +139,6 @@ func LogAppender(namespace, appName, logFileName string, c *cache.Cache) {
 
 
 	}
-
-	// 等待上游发送消息至此管道，如果有值，就停止阻塞
-	//<-quitChan
 }
 
 //convertErrMsg doc
@@ -141,7 +150,7 @@ func LogAppender(namespace, appName, logFileName string, c *cache.Cache) {
 //@param conf
 func convertErrMsg(text, msg string, conf *config.AlterConf) string  {
 	errs := conf.Errs
-	newLine := ""
+	newLine := text
 
 	match := common.IsDatePrefix(text)
 	hasExp := false
@@ -157,25 +166,25 @@ func convertErrMsg(text, msg string, conf *config.AlterConf) string  {
 
 	// log.error 输出方式，
 	if !hasExp && match && strings.Contains(newLine, common.ERROR_TAG) {
-		msg += newLine + "\n"
+		msg += newLine
 	}
 
 	if hasExp && match {
 		if !strings.Contains(newLine, common.DEBUG_TAG) && !strings.Contains(newLine, common.WARN_TAG) {
-			msg += newLine + "\n"
+			msg += newLine
 		}
 	}
 
 	if hasExp && !match {
 		//errContentChan <- newLine + "\n"
 		//writing <- true
-		msg += newLine + "\n"
+		msg += newLine
 	}
 
 	if !hasExp && !match && !strings.Contains(newLine, common.DEBUG_TAG) {
 		//errContentChan <- newLine + "\n"
 		//writing <- true
-		msg += newLine + "\n"
+		msg += newLine
 	}
 
 	return msg

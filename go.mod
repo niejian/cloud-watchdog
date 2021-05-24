@@ -11,7 +11,7 @@ require (
 	github.com/spf13/viper v1.7.1
 	go.uber.org/multierr v1.6.0 // indirect
 	go.uber.org/zap v1.16.0
-	golang.org/x/sys v0.0.0-20210426230700-d19ff857e887 // indirect
+	golang.org/x/sys v0.0.0-20210514084401-e8d321eab015 // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0
 	gopkg.in/yaml.v2 v2.4.0
 	gorm.io/driver/mysql v1.0.6

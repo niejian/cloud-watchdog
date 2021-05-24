@@ -13,4 +13,5 @@ var (
 	//K8S_LOG_DIR    = "/var/log/containers"
 	//K8S_LOG_DIR    = "/Users/a/logs/"
 	K8S_LOG_DIR  *string
+	Docker_Log_Dir *string
 )

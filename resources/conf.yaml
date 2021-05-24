@@ -19,7 +19,9 @@ wx:
   agentid: '1000079'
 globalConst:
   dev:
-    k8sLogDir: '/Users/a/logs/'
+#    k8sLogDir: '/Users/a/logs/'
+    k8sLogDir: '/var/log/containers/'
   pro:
     k8sLogDir: '/var/log/containers/'
   logAlterName: 'log_alter_conf'
+  dockerLogDir: '/var/lib/docker/containers/'

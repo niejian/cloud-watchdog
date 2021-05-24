@@ -8,6 +8,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"regexp"
+	"time"
 )
 
 var (
@@ -54,4 +55,14 @@ func Md5Str(str string) string {
 	h := md5.New()
 	h.Write([]byte(str))
 	return hex.EncodeToString(h.Sum(nil))
+}
+
+//FormatDate doc
+//@Description: 时间格式化
+//@Author niejian
+//@Date 2021-05-24 15:52:59
+//@param pattern
+//@return string
+func FormatDate(pattern string) string {
+	return time.Now().Format(pattern)
 }

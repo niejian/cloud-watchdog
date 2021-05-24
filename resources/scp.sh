@@ -9,7 +9,7 @@ set port [lindex $argv 3]
 set resources [lindex $argv 4]
 
 #spawn scp /data/watchDog/watch-dog appadm@192.168.240.53:/home/appadm
-spawn scp -P $port $resources  $username@$host:/data/watch-dog/
+spawn scp -P $port $resources  $username@$host:/data/
 
 #spawn scp -P $port /data/watchDog/watch-dog $username@$host:$remoteDir/watch-dog.tmp
 

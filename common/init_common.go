@@ -75,7 +75,36 @@ func GetAppNameByLogFileName(fileName string) (string, string, error)  {
 	labels := pod.Labels
 	// 获取 app标签
 	appName := labels["app"]
+	zapLog.LOGGER().Debug("appName: "+appName+ ", namespace:" + namespace+ "linkFile: " + fileName )
 
 	return namespace, appName, nil
+}
+
+//GetRealFileName doc
+//@Description: linux环境下获取到真正的pod日志信息
+//@Author niejian
+//@Date 2021-05-24 11:35:43
+//@param linkFileName
+//@return string
+func GetRealFileName(linkFileName string) string  {
+	var containerId string
+	zapLog.LOGGER().Debug("linkFileName: " + linkFileName)
+	if strings.Contains(linkFileName, *global.K8S_LOG_DIR) {
+		linkFileName = strings.ReplaceAll(linkFileName,  *global.K8S_LOG_DIR, "")
+	}
+
+	linkFileName = strings.ReplaceAll(linkFileName, string(filepath.Separator), "")
+	names := strings.Split(linkFileName, "_")
+	// containerId
+	if len(names) > 2 {
+		containerId = names[2]
+		containerIds := strings.Split(containerId, "-")
+		containerId = containerIds[len(containerIds)-1]
+		containerId = strings.Split(containerId, ".")[0]
+		return containerId
+	}
+
+	return containerId
+
 }
 

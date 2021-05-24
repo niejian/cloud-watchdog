@@ -1,6 +1,6 @@
 # dubbo client yaml configure file
 
-check: true
+check: false
 # client
 request_timeout: "3s"
 # connect timeout

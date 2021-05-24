@@ -34,10 +34,18 @@ func ListLogAlterConfByAppNameAndNamespace(ns, appName string) []*conf.AlterConf
 	for _, data := range datas {
 		conf := &conf.AlterConf{
 			ToUserIds: data.ToUserIds,
-			Ignores:   strings.Split(data.Ignores, "|"),
-			Errs:      strings.Split(data.Errs, "|"),
+			Ignores:   nil,
+			Errs:      nil,
 			AppName:   data.AppName,
 			Namespace: data.Namespace,
+		}
+		ignores := data.Ignores
+		errs := data.Errs
+		if "" != ignores {
+			conf.Ignores = strings.Split(ignores, "|")
+		}
+		if "" != errs {
+			conf.Errs = strings.Split(errs, "|")
 		}
 		confs = append(confs, conf)
 	}
