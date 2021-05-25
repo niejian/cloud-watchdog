@@ -7,6 +7,7 @@ import (
 	"cloud-watchdog/zapLog"
 	"fmt"
 	"github.com/patrickmn/go-cache"
+	"go.uber.org/zap"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -44,6 +45,11 @@ func main() {
 
 	// 初始化缓存
 	c := cache.New(20*time.Second, 30*time.Second)
+	defer func() {
+		if err := recover(); err != nil {
+			zapLog.LOGGER().Error("main recovery", zap.Any("err", err))
+		}
+	}()
 
 	osType := runtime.GOOS
 	// mac os
@@ -56,14 +62,18 @@ func main() {
 	// linux
 	if osType == "linux" {
 		done := make(chan bool, 1)
+
 		// 获取所有文件信息
 		// 获取文件数
 		infos, _ := ioutil.ReadDir(*global.K8S_LOG_DIR)
 		for _, info := range infos {
 			linkFileName := info.Name()
 			zapLog.LOGGER().Debug("fileName：" + linkFileName)
-			fsListener.ListenAppLogV4(linkFileName, c)
+			fsListener.ListenAppLogV3(linkFileName, c)
 		}
+
+		// 监听连接文件的创建和删除操作
+		fsListener.ListenLinkfile(c)
 		<-done
 	}
 

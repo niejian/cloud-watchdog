@@ -3,6 +3,7 @@
 package logappender
 
 import (
+	"bytes"
 	"cloud-watchdog/common"
 	"cloud-watchdog/config"
 	"cloud-watchdog/model"
@@ -15,7 +16,11 @@ import (
 	"time"
 )
 
-var lock sync.Mutex
+var (
+	lock sync.Mutex
+	tailMap sync.Map
+)
+
 
 
 //tailLogFile doc
@@ -39,6 +44,14 @@ func LogAppender(namespace, appName, logFileName string, c *cache.Cache) {
 	zapLog.LOGGER().Info("文件写操作：", zap.String("fileName", logFileName))
 	//quitChan := make(chan bool, 1)
 	go func() {
+		defer func() {
+			if err := recover(); err != nil {
+				zapLog.LOGGER().Error("tail log panic, prepare recovery", zap.Any("err", err))
+				time.Sleep(1 * time.Second)
+				tailLog(logFileName, namespace, appName, c)
+			}
+		}()
+
 		tailLog(logFileName, namespace, appName, c)
 	}()
 
@@ -53,6 +66,8 @@ func tailLog(logFileName, namespace, appName string, c *cache.Cache)  {
 		zapLog.LOGGER().Error("构造tail对象失败，", zap.String("err", err.Error()))
 		return
 	}
+
+	tailMap.LoadOrStore(logFileName, tailLog)
 
 	msg := ""
 	// tail -f
@@ -70,7 +85,7 @@ func tailLog(logFileName, namespace, appName string, c *cache.Cache)  {
 		}
 		text := line.Text
 		//fmt.Println("========》追踪到的日志信息：", text)
-		zapLog.LOGGER().Info("追踪到的日志信息: " + text, zap.String("logFile", logFileName))
+		zapLog.LOGGER().Debug("追踪到的日志信息: " + text, zap.String("logFile", logFileName))
 		//k8s 日志
 		var k8sLogModel model.K8sLogModel
 		data, err := common.JSONStringFormat(text, k8sLogModel)
@@ -88,7 +103,7 @@ func tailLog(logFileName, namespace, appName string, c *cache.Cache)  {
 		errs := conf.Errs
 		hasExp := false
 		//custErr := ""
-		zapLog.LOGGER().Info("", zap.String("msg", msg))
+		zapLog.LOGGER().Debug("", zap.String("msg", msg))
 
 
 
@@ -112,20 +127,22 @@ func tailLog(logFileName, namespace, appName string, c *cache.Cache)  {
 				for _, errTag := range errs {
 					//fmt.Printf("errTag：%v, newLine: %v \n", errTag, newLine)
 					// 含有异常关键字，发送提示告警
-					if strings.Contains(msg, errTag) {
+					if "" != errTag && strings.Contains(msg, errTag) {
 						//custErr = errTag
+						zapLog.LOGGER().Debug("has error", zap.String("err", errTag))
 						hasExp = true
 						break
 					}
 				}
 				if hasExp && "" != msg {
 					lock.Lock()
+					zapLog.LOGGER().Debug("", zap.String("msg", msg))
 					md5Str := common.Md5Str(msg)
 					_, isExist := c.Get(md5Str)
-					if !isExist {
-						c.Set(md5Str, "a", time.Minute)
-						title := "应用名称：" + appName + "\n时间：" + common.FormatDate("2006-01-02 15:04:05") + "\n"
-						common.SendMsgUtil(title + msg, conf)
+					if !isExist && "" != msg {
+						c.Set(md5Str, "a", cache.DefaultExpiration)
+						alarmMsg := convertWxchatMsg(appName, msg)
+						common.SendMsgUtil(alarmMsg, conf)
 					}
 					lock.Unlock()
 				}else {
@@ -137,8 +154,18 @@ func tailLog(logFileName, namespace, appName string, c *cache.Cache)  {
 
 		})
 
-
 	}
+}
+
+func convertWxchatMsg(appName, msg string) string {
+	var buffer bytes.Buffer
+	buffer.WriteString("应用名称：" + appName + "\n")
+	buffer.WriteString("时间：" + common.FormatDate("2006-01-02 15:04:05") + "\n")
+	buffer.WriteString(msg)
+	alarmMsg := buffer.String()
+
+	return alarmMsg
+
 }
 
 //convertErrMsg doc
@@ -188,5 +215,14 @@ func convertErrMsg(text, msg string, conf *config.AlterConf) string  {
 	}
 
 	return msg
+}
+
+func StopTail(logFileName string)  {
+	// 从map中获取
+	tailLog, ok := tailMap.Load(logFileName)
+	if ok {
+		re, _ := tailLog.(*tail.Tail)
+		re.Stop()
+	}
 }
 
