@@ -19,6 +19,12 @@ var fileMap sync.Map
 var namespaceMap sync.Map
 
 func ListenAppLogV3(linkFileName string, c *cache.Cache)  {
+	defer func() {
+		if err := recover(); err != nil {
+			zapLog.LOGGER().Error("ListenAppLogV3 recovery", zap.Any("err", err))
+			getAppNameAndNamespace(linkFileName, c)
+		}
+	}()
 	// 通过 连接文件名找找到实际文件
 	getAppNameAndNamespace(linkFileName, c)
 
@@ -27,6 +33,7 @@ func ListenAppLogV3(linkFileName string, c *cache.Cache)  {
 func getAppNameAndNamespace(linkFileName string, c *cache.Cache)  {
 	var namespace  = ""
 	var appName = ""
+	//var err error
 	var key = common.Md5Str(linkFileName)
 	// 缓存namespace等信息
 	if val, ok := namespaceMap.Load(key); ok {
@@ -38,7 +45,7 @@ func getAppNameAndNamespace(linkFileName string, c *cache.Cache)  {
 	} else {
 		namespace, appName, _ = common.GetAppNameByLogFileName(linkFileName)
 		if namespace == "" || appName == "" {
-			zapLog.LOGGER().Error("解析失败: " + linkFileName)
+			zapLog.LOGGER().Error("获取命名空间或者项目名失败")
 		}
 		if "" != namespace && "" != appName {
 			namespaceMap.Store(key, namespace + "," + appName)

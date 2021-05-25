@@ -60,9 +60,19 @@ func GetAppNameByLogFileName(fileName string) (string, string, error)  {
 	if len(names) > 1 {
 		podName = names[0]
 		namespace = names[1]
+
 	}else{
 		return "", "", errors.New(fileName + ", not a format pod log file")
 	}
+
+	// 判断namespace是否是过滤的namespace
+
+	for _, ns := range *global.Exclude_Ns {
+		if ns == namespace || strings.HasPrefix(namespace, ns) {
+			return "", "", errors.New(fileName + ", ns=" +namespace + "， 为忽略的命名空间，不处理")
+		}
+	}
+
 	// 根据podName，namespace获取到相关pod详细信息，label包含appName
 	pod, err := api.DescribePod(podName, namespace)
 	if nil != err {

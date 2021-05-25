@@ -72,6 +72,7 @@ func tailLog(logFileName, namespace, appName string, c *cache.Cache)  {
 	msg := ""
 	// tail -f
 	for line := range tailLog.Lines {
+		custErr := ""
 		// 获取该文件的配置信息
 		conf, err := common.GetLogAlterConfByFileName(namespace, appName)
 		if nil != err {
@@ -128,7 +129,7 @@ func tailLog(logFileName, namespace, appName string, c *cache.Cache)  {
 					//fmt.Printf("errTag：%v, newLine: %v \n", errTag, newLine)
 					// 含有异常关键字，发送提示告警
 					if "" != errTag && strings.Contains(msg, errTag) {
-						//custErr = errTag
+						custErr = errTag
 						zapLog.LOGGER().Debug("has error", zap.String("err", errTag))
 						hasExp = true
 						break
@@ -141,7 +142,7 @@ func tailLog(logFileName, namespace, appName string, c *cache.Cache)  {
 					_, isExist := c.Get(md5Str)
 					if !isExist && "" != msg {
 						c.Set(md5Str, "a", cache.DefaultExpiration)
-						alarmMsg := convertWxchatMsg(appName, msg)
+						alarmMsg := convertWxchatMsg(custErr, appName, msg)
 						common.SendMsgUtil(alarmMsg, conf)
 					}
 					lock.Unlock()
@@ -157,10 +158,11 @@ func tailLog(logFileName, namespace, appName string, c *cache.Cache)  {
 	}
 }
 
-func convertWxchatMsg(appName, msg string) string {
+func convertWxchatMsg(custErr, appName, msg string) string {
 	var buffer bytes.Buffer
 	buffer.WriteString("应用名称：" + appName + "\n")
 	buffer.WriteString("时间：" + common.FormatDate("2006-01-02 15:04:05") + "\n")
+	buffer.WriteString("异常信息：" + custErr + "\n")
 	buffer.WriteString(msg)
 	alarmMsg := buffer.String()
 

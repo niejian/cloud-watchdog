@@ -25,3 +25,10 @@ globalConst:
     k8sLogDir: '/var/log/containers/'
   logAlterName: 'log_alter_conf'
   dockerLogDir: '/var/lib/docker/containers/'
+exclude-ns:
+  - kube-system
+  - kubesphere
+  - kube-
+  - uat-
+  - prd-
+  - istio-

@@ -67,9 +67,26 @@ func main() {
 		// 获取文件数
 		infos, _ := ioutil.ReadDir(*global.K8S_LOG_DIR)
 		for _, info := range infos {
+
 			linkFileName := info.Name()
-			zapLog.LOGGER().Debug("fileName：" + linkFileName)
-			fsListener.ListenAppLogV3(linkFileName, c)
+			// 过滤非系统命名空间
+			names := strings.Split(linkFileName, "_")
+			if len(names) < 2 {
+				continue
+			}
+			namespace := names[1]
+			// 判断namespace是否是过滤的namespace
+			isContinue := true
+			for _, ns := range *global.Exclude_Ns {
+				if ns == namespace || strings.HasPrefix(namespace, ns) {
+					zapLog.LOGGER().Info(linkFileName + ", ns=" + namespace + "， 为忽略的命名空间，不处理")
+					isContinue = false
+					break
+				}
+			}
+			if isContinue {
+				fsListener.ListenAppLogV3(linkFileName, c)
+			}
 		}
 
 		// 监听连接文件的创建和删除操作

@@ -22,4 +22,5 @@ func GlobalConstInitialize(env string)  {
 
 	global.LOG_ALTER_NAME = &config.GlobalConst.LogAlterName
 	global.Docker_Log_Dir = &config.GlobalConst.DockerLogDir
+	global.Exclude_Ns = &config.ExcludeNs
 }

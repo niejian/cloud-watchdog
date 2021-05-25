@@ -10,6 +10,7 @@ type SysConfig struct {
 	Log           LogConfig     `mapstructure:"log" json:"log" yaml:"log"`
 	WxChatMsgConf WxChatMsgConf `mapstructure:"wx" json:"wx" yaml:"wx"`
 	GlobalConst   GlobalConst   `mapstructure:"globalConst" json:"globalConst" yaml:"globalConst"`
+	ExcludeNs []string `mapstructure:"exclude-ns" json:"exclude-ns" yaml:"exclude-ns"` // 排除解析的namespace
 }
 
 type Mysql struct {

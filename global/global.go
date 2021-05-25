@@ -14,4 +14,5 @@ var (
 	//K8S_LOG_DIR    = "/Users/a/logs/"
 	K8S_LOG_DIR  *string
 	Docker_Log_Dir *string
+	Exclude_Ns *[]string
 )
