@@ -5,12 +5,10 @@ import (
 	"cloud-watchdog/global"
 	"cloud-watchdog/initialize"
 	"cloud-watchdog/zapLog"
-	"fmt"
 	"github.com/patrickmn/go-cache"
 	"go.uber.org/zap"
 	"io/ioutil"
 	"os"
-	"path/filepath"
 	"runtime"
 	"strings"
 	"time"
@@ -27,18 +25,7 @@ func init() {
 	//env := flag.String("env", "dev1", "get env")
 	// 初始化环境
 	initialize.DoInitialize(env)
-	linkFileName := "workorder-control-77d5fd85ff-9gtp5_workorder_workorder-control-c36c983de7cac1092bcd5c94a15e179bc7b051374f2733dbf7c6e118cba2c178.log"
-	//linkFileName := "workorder-control-c36c983de7cac1092bcd5c94a15e179bc7b051374f2733db118cba2c178.log"
-	//appName := "workorder-control"
 
-	linkFileName = strings.ReplaceAll(linkFileName, string(filepath.Separator), "")
-	names := strings.Split(linkFileName, "_")
-	var containerId string = names[2]
-	containerIds := strings.Split(containerId, "-")
-	containerId = containerIds[len(containerIds)-1]
-	containerId = strings.Split(containerId, ".")[0]
-	//fmt.Println(strings.ReplaceAll(linkFileName, appName+"-", ""))
-	fmt.Println(containerId)
 }
 
 func main() {

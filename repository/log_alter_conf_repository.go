@@ -38,6 +38,7 @@ func ListLogAlterConfByAppNameAndNamespace(ns, appName string) []*conf.AlterConf
 			Errs:      nil,
 			AppName:   data.AppName,
 			Namespace: data.Namespace,
+			EnableStore: data.EnableStore,
 		}
 		ignores := data.Ignores
 		errs := data.Errs

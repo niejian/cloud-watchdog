@@ -6,6 +6,8 @@ import (
 	"bytes"
 	"cloud-watchdog/common"
 	"cloud-watchdog/config"
+	"cloud-watchdog/es"
+	"cloud-watchdog/global"
 	"cloud-watchdog/model"
 	"cloud-watchdog/zapLog"
 	"github.com/hpcloud/tail"
@@ -144,6 +146,13 @@ func tailLog(logFileName, namespace, appName string, c *cache.Cache)  {
 						c.Set(md5Str, "a", cache.DefaultExpiration)
 						alarmMsg := convertWxchatMsg(custErr, appName, msg)
 						common.SendMsgUtil(alarmMsg, conf)
+						if conf.EnableStore == 1 {
+							// 存储至es中
+							vo := common.Convert2EsStore(appName, custErr, msg)
+							// 插入数据
+							es.InsertDocument(global.Es_Client, vo)
+						}
+
 					}
 					lock.Unlock()
 				}else {

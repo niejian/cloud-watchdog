@@ -32,3 +32,10 @@ exclude-ns:
   - uat-
   - prd-
   - istio-
+es:
+  urls:
+    - http://192.168.243.16:9200
+    - http://192.168.243.17:9200
+    - http://192.168.243.8:9200
+  username: elastic
+  password: GreatAge

@@ -10,7 +10,8 @@ type SysConfig struct {
 	Log           LogConfig     `mapstructure:"log" json:"log" yaml:"log"`
 	WxChatMsgConf WxChatMsgConf `mapstructure:"wx" json:"wx" yaml:"wx"`
 	GlobalConst   GlobalConst   `mapstructure:"globalConst" json:"globalConst" yaml:"globalConst"`
-	ExcludeNs []string `mapstructure:"exclude-ns" json:"exclude-ns" yaml:"exclude-ns"` // 排除解析的namespace
+	ExcludeNs     []string      `mapstructure:"exclude-ns" json:"exclude-ns" yaml:"exclude-ns"` // 排除解析的namespace
+	Es            Es            `mapstructure:"es" json:"es" yaml:"es"`
 }
 
 type Mysql struct {
@@ -35,6 +36,7 @@ type AlterConf struct {
 	Errs      []string `mapstructure:"errs" json:"errs" yaml:"errs"`
 	AppName   string   `mapstructure:"appName" json:"appName" yaml:"appName"`
 	Namespace string   `mapstructure:"namespace" json:"namespace" yaml:"namespace"`
+	EnableStore int `mapstructure:"enableStore" json:"enableStore" yaml:"enableStore"`
 }
 
 type GlobalConst struct {
@@ -51,4 +53,10 @@ type Dev struct {
 
 type Pro struct {
 	K8sLogDir string `mapstructure:"k8sLogDir" json:"k8sLogDir" yaml:"k8sLogDir"`
+}
+
+type Es struct {
+	Urls     []string `yaml:"urls" json:"urls" mapstructure:"urls"`
+	Username string   `yaml:"username" json:"username" mapstructure:"username"`
+	Password string   `yaml:"password" json:"password" mapstructure:"password"`
 }

@@ -16,6 +16,7 @@ type ErrorLogAlterConfig struct {
 	AppName string `json:"appName" gorm:"comment: 应用名称"`
 	// 命名空间
 	Namespace string `json:"namespace" gorm:"comment: 命名空间"`
+	EnableStore int `json:"enableStore" gorm:"comment:是否存储"`
 }
 
 type LogAlterConf struct {

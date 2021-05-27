@@ -10,5 +10,6 @@ func DoInitialize(env string)  {
 	// mysql 初始化
 	MysqlInitialize()
 	GlobalConstInitialize(env)
+	EslInitialize()
 	
 }

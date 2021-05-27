@@ -7,6 +7,7 @@ require (
 	github.com/apache/dubbo-go-hessian2 v1.9.1
 	github.com/fsnotify/fsnotify v1.4.9
 	github.com/hpcloud/tail v1.0.0
+	github.com/olivere/elastic/v7 v7.0.24
 	github.com/patrickmn/go-cache v2.1.0+incompatible
 	github.com/spf13/viper v1.7.1
 	go.uber.org/multierr v1.6.0 // indirect
