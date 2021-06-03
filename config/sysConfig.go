@@ -31,12 +31,13 @@ type WxChatMsgConf struct {
 }
 
 type AlterConf struct {
-	ToUserIds string   `mapstructure:"toUserIds" json:"toUserIds" yaml:"toUserIds"`
-	Ignores   []string `mapstructure:"ignores" json:"ignores" yaml:"ignores"`
-	Errs      []string `mapstructure:"errs" json:"errs" yaml:"errs"`
-	AppName   string   `mapstructure:"appName" json:"appName" yaml:"appName"`
-	Namespace string   `mapstructure:"namespace" json:"namespace" yaml:"namespace"`
-	EnableStore int `mapstructure:"enableStore" json:"enableStore" yaml:"enableStore"`
+	ToUserIds   string   `mapstructure:"toUserIds" json:"toUserIds" yaml:"toUserIds"`
+	Ignores     []string `mapstructure:"ignores" json:"ignores" yaml:"ignores"`
+	Errs        []string `mapstructure:"errs" json:"errs" yaml:"errs"`
+	AppName     string   `mapstructure:"appName" json:"appName" yaml:"appName"`
+	Namespace   string   `mapstructure:"namespace" json:"namespace" yaml:"namespace"`
+	EnableStore int      `mapstructure:"enableStore" json:"enableStore" yaml:"enableStore"`
+	IsEnable    int      `mapstructure:"isEnable" json:"isEnable" yaml:"isEnable"`
 }
 
 type GlobalConst struct {

@@ -86,6 +86,13 @@ func tailLog(logFileName, namespace, appName string, c *cache.Cache)  {
 			zapLog.LOGGER().Debug("配置为空")
 			continue
 		}
+
+		// 是否开启告警
+		if conf.IsEnable != 1 {
+			zapLog.LOGGER().Info("未开启告警", zap.String("namespace", namespace), zap.String("appName", appName))
+			continue
+		}
+
 		text := line.Text
 		//fmt.Println("========》追踪到的日志信息：", text)
 		zapLog.LOGGER().Debug("追踪到的日志信息: " + text, zap.String("logFile", logFileName))
