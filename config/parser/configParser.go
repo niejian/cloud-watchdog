@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 var logConfigFileName = "log.yaml"
@@ -55,6 +56,33 @@ func SysConfigParser() (*config.SysConfig, error) {
 	err = yaml.Unmarshal(file, sysConfig)
 	if err != nil {
 		fmt.Printf("日志配置转化yaml失败，err:%v \n", err)
+	}
+
+	// 判断是否是k8s环境，如果是，那么数据库，es读取k8s部署文件中的配置信息
+	enableK8s := os.Getenv("ENABLE_K8S")
+	if "" != enableK8s && "true" == enableK8s {
+		mysqlUrl := os.Getenv("MYSQL_URLS")
+		mysqlUsername := os.Getenv("MYSQL_USERNAME")
+		mysqlPassword := os.Getenv("MYSQL_PASSWORD")
+
+		if "" != mysqlUrl && "" != mysqlUsername && "" != mysqlPassword {
+			sysConfig.Mysql.Path = mysqlUrl
+			sysConfig.Mysql.Username = mysqlUsername
+			sysConfig.Mysql.Password = mysqlPassword
+		}
+
+		fmt.Println("读取k8s配置信息 ")
+		esUrls := os.Getenv("ES_URLS")
+		esUsername := os.Getenv("ES_USERNAME")
+		esPassword := os.Getenv("ES_PASSWORD")
+
+		if "" != esUrls && "" != esUsername && "" != esPassword {
+			// 替换
+			sysConfig.Es.Urls = strings.Split(esUrls, ",")
+			sysConfig.Es.Username = esUsername
+			sysConfig.Es.Password = esPassword
+		}
+
 	}
 
 	return sysConfig, nil
