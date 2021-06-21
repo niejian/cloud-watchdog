@@ -13,7 +13,7 @@ if [ -f "$PIDFILE" ]; then
     ./stop.sh
 else
   echo "【看门狗】开始启动..."
-  nohup $DirName/$BinaryName 2>&1 &
+  nohup $DirName/$BinaryName 2>&1
   printf '%d' $! > $PidFile
   echo "【看门狗】启动成功"
 fi
