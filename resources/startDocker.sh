@@ -5,7 +5,8 @@ DirName=$(cd $(dirname $0); pwd)
 cd $DirName
 # 设置环境变量信息
 export APP_LOG_CONF_FILE=$DirName/resources/dubbo-log.yml
-export CONF_CONSUMER_FILE_PATH=$DirName/resources/client.yml
+# 4 k8s setting
+#export CONF_CONSUMER_FILE_PATH=$DirName/resources/client.yml
 export ENV=pro
 
 if [ -f "$PIDFILE" ]; then

@@ -2,6 +2,9 @@ apiVersion: v1
 kind: Namespace
 metadata:
   name: k8s-watchdog
+  labels:
+    'kubesphere.io/namespace': 'k8s-watchdog'
+    'kubesphere.io/workspace': 'cloud-platform'
 # kubectl create secret docker-registry harbor --docker-server=harbor.bluemoon.com.cn --docker-username=deploy --docker-password=Harbor@bm123 --docker-email=xuxianxue@bluemoon.com.cn
 # kubectl get secret harbor --output=yaml
 #---

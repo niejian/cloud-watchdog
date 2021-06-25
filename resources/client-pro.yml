@@ -19,7 +19,7 @@ registries:
   "zk":
     protocol: "zookeeper"
     timeout: "3s"
-    address: "192.168.240.15:2181"
+    address: "192.168.48.66:2181"
     username: ""
     password: ""
 
