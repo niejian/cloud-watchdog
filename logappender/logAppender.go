@@ -119,6 +119,9 @@ func tailLog(logFileName, namespace, appName string, c *cache.Cache)  {
 
 		// 1秒没操作，判断是需要发送消息
 		time.AfterFunc(1*time.Second, func() {
+			if "" == msg {
+				return
+			}
 			//fmt.Println("时间静止500MS")
 			msg = strings.TrimSpace(msg)
 			if "" != msg && len(ignores) > 0 {
@@ -137,7 +140,7 @@ func tailLog(logFileName, namespace, appName string, c *cache.Cache)  {
 				for _, errTag := range errs {
 					//fmt.Printf("errTag：%v, newLine: %v \n", errTag, newLine)
 					// 含有异常关键字，发送提示告警
-					if "" != errTag && strings.Contains(msg, errTag+":") {
+					if "" != errTag && strings.Contains(msg, errTag) {
 						if errTag == "Exception"{
 							// 拿到具体的异常信息
 							index := strings.Index(msg, errTag+":")
