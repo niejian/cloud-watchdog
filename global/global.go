@@ -72,4 +72,38 @@ var (
 			}
 		}
 	}`
+
+	// log collect mapping
+	LOG_COLLECT_INDICE_NAME_PREFIX = "logstash_log_"
+	/*
+	LOG_COLLECT_INDICE_MAPPING     = `
+
+	{
+		"mappings": {
+			"properties":{
+				"message": {
+					"type": "text",
+					"analyzer": "whitespace"
+				}
+			}
+		}
+	}`
+	*/
+	// simple 分析器当它遇到只要不是字母的字符，就将文本解析成term，而且所有的term都是小写的。
+	LOG_COLLECT_INDICE_MAPPING     = `
+
+	{
+		"mappings": {
+			"properties":{
+				"message": {
+					"type": "text",
+					"analyzer": "ik_max_word" 
+				}
+			}
+		}
+	}`
+
+	//LOG_COLLECT_INDICE_MAPPING     = `{}`
+
+
 )

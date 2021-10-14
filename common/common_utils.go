@@ -15,6 +15,9 @@ var (
 	ERROR_TAG        = "ERROR"
 	DEBUG_TAG        = "DEBUG"
 	WARN_TAG         = "WARN"
+	TIME_MILLSECONDS_FORMAT = "2006-01-02 15:04:05.000"
+	TIME_DATE_FORMAT = "2006.01.02"
+
 )
 //JSONStringFormat doc
 //@Description: 将json字符串转化为对应实体信息，失败返回(nil, error)

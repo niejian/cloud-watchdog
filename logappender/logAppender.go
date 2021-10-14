@@ -141,15 +141,20 @@ func tailLog(logFileName, namespace, appName string, c *cache.Cache)  {
 					//fmt.Printf("errTag：%v, newLine: %v \n", errTag, newLine)
 					// 含有异常关键字，发送提示告警
 					if "" != errTag && strings.Contains(msg, errTag) {
-						if errTag == "Exception"{
+						if errTag == "Exception" {
 							// 拿到具体的异常信息
 							index := strings.Index(msg, errTag+":")
-							s := msg[0:index]
-							if len(s) > 0 {
-								split := strings.Split(s, ".")
-								length := len(split)
-								custErr = split[length - 1] + errTag
+							if index > 0 {
+								s := msg[0:index]
+								if len(s) > 0 {
+									split := strings.Split(s, ".")
+									length := len(split)
+									custErr = split[length - 1] + errTag
+								}
+							} else {
+								custErr = errTag
 							}
+
 						}else {
 							custErr = errTag
 						}

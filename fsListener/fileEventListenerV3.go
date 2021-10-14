@@ -6,6 +6,7 @@ import (
 	"cloud-watchdog/common"
 	"cloud-watchdog/global"
 	"cloud-watchdog/logappender"
+	"cloud-watchdog/logcollector"
 	"cloud-watchdog/zapLog"
 	"github.com/fsnotify/fsnotify"
 	"github.com/patrickmn/go-cache"
@@ -15,8 +16,11 @@ import (
 	"sync"
 )
 
+// 异常统计map
 var fileMap sync.Map
 var namespaceMap sync.Map
+// 日志收集统计map
+var logCollectorMap sync.Map
 
 func ListenAppLogV3(linkFileName string, c *cache.Cache)  {
 	defer func() {
@@ -30,7 +34,7 @@ func ListenAppLogV3(linkFileName string, c *cache.Cache)  {
 
 }
 
-func getAppNameAndNamespace(linkFileName string, c *cache.Cache)  {
+func SplitNamespaceAndAppName(linkFileName string) (string, string, error)  {
 	var namespace  = ""
 	var appName = ""
 	//var err error
@@ -52,12 +56,31 @@ func getAppNameAndNamespace(linkFileName string, c *cache.Cache)  {
 		}
 	}
 
-	// 判断文件是否是我要监听的（podName_namespace_xxxx.log）
+	return namespace, appName, nil
+}
+
+func getAppNameAndNamespace(linkFileName string, c *cache.Cache)  {
+	//var namespace  = ""
+	//var appName = ""
+	namespace, appName, _ := SplitNamespaceAndAppName(linkFileName)
+	if "" == namespace || "" == appName {
+		zapLog.LOGGER().Error("分解命名空间,appName失败", zap.String("fileName", linkFileName))
+		return
+	}
+
+	// 异常报错:判断文件是否是我要监听的（podName_namespace_xxxx.log）
 	_, loaded := fileMap.LoadOrStore(linkFileName, 1)
+
+	// 日志收集:判断文件是否被监听
+	_, isCollect := logCollectorMap.LoadOrStore(linkFileName, 1)
+
 
 	// 该文件没被监听
 	if !loaded {
 		doLogAppender(namespace, appName, linkFileName, c)
+	}
+	if !isCollect {
+		logcollector.CollectorLog(namespace, appName, linkFileName, c)
 	}
 }
 
@@ -65,7 +88,7 @@ func doLogAppender(namespace, appName, linkFileName string, c *cache.Cache)  {
 
 	// 通过连接文件名获取到真正的文件信息 /var/lib/docker/containers/cid/cid-json.log
 	// 获取真实的docker日志文件信息
-	dockerLogFileName := getDockerLogFilePath(linkFileName)
+	dockerLogFileName := GetDockerLogFilePath(linkFileName)
 	if "" == dockerLogFileName {
 		zapLog.LOGGER().Error("linkfile：" + linkFileName + ", 无法获取到实际文件信息")
 		return
@@ -136,13 +159,14 @@ func ListenLinkfile(c *cache.Cache) {
 				}
 				// 文件删除操作
 				if op&fsnotify.Remove == fsnotify.Remove {
-					dockerLogFilePath := getDockerLogFilePath(fileName)
+					dockerLogFilePath := GetDockerLogFilePath(fileName)
 					if "" == dockerLogFilePath {
 						break
 					}
 					zapLog.LOGGER().Info("文件删除操作， 取消tail -f：", zap.String("source", fileName), zap.String("target", dockerLogFilePath))
 					// 取消tail -f
 					logappender.StopTail(dockerLogFilePath)
+					logcollector.StopTail(dockerLogFilePath)
 				}
 
 			}
@@ -159,7 +183,7 @@ func ListenLinkfile(c *cache.Cache) {
 //@Date 2021-05-25 10:11:08
 //@param linkFileName
 //@return string
-func getDockerLogFilePath(linkFileName string) string {
+func GetDockerLogFilePath(linkFileName string) string {
 
 	containerId := common.GetRealFileName(linkFileName)
 	if "" == containerId {

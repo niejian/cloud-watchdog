@@ -18,6 +18,7 @@ type ErrorLogAlterConfig struct {
 	Namespace string `json:"namespace" gorm:"comment: 命名空间"`
 	EnableStore int `json:"enableStore" gorm:"comment:是否存储"`
 	IsEnable int `json:"isEnable" gorm:"comment: 是否开启告警"`
+	IsCollectLog int `json:"isCollectLog" gorm:"comment: 是否开启日志收集"`
 }
 
 type LogAlterConf struct {

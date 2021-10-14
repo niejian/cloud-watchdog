@@ -40,7 +40,7 @@ func GetLogAlterConfByFileName(namespace, appName string) (*conf.AlterConf, erro
 
 
 //GetAppNameByLogFileName doc
-//@Description: 通过日志文件名获取appName
+//@Description: 通过日志文件名获取appName, 并忽略掉系统命名空间
 //@Author niejian
 //@Date 2021-05-14 11:34:53
 //@param fileName
@@ -66,7 +66,6 @@ func GetAppNameByLogFileName(fileName string) (string, string, error)  {
 	}
 
 	// 判断namespace是否是过滤的namespace
-
 	for _, ns := range *global.Exclude_Ns {
 		if ns == namespace || strings.HasPrefix(namespace, ns) {
 			return "", "", errors.New(fileName + ", ns=" +namespace + "， 为忽略的命名空间，不处理")

@@ -32,6 +32,7 @@ exclude-ns:
   - uat-
   - prd-
   - istio-
+  - apollo
 es:
   urls:
     - http://192.168.243.16:9200

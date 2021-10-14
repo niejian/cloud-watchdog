@@ -2,6 +2,8 @@
 
 package model
 
+import "time"
+
 type EsModel struct {
 	Urls     []string `yaml:"urls" json:"urls" mapstructure:"urls"`
 	Username string   `yaml:"username" json:"username" mapstructure:"username"`
@@ -20,4 +22,12 @@ type ExceptionStore struct {
 	ExceptionTag string `json:"exceptionTag"`
 	From         string `json:"from"`
 	Msg          string `json:"msg"`
+}
+
+// 日志存储提
+type LogContent struct {
+	Message   string  `json:"message"`
+	Timestamp time.Time `json:"@timestamp"`
+	Version string `json:"@version"`
+	PodName string `json:"podName"`
 }

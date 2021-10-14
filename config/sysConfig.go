@@ -38,6 +38,7 @@ type AlterConf struct {
 	Namespace   string   `mapstructure:"namespace" json:"namespace" yaml:"namespace"`
 	EnableStore int      `mapstructure:"enableStore" json:"enableStore" yaml:"enableStore"`
 	IsEnable    int      `mapstructure:"isEnable" json:"isEnable" yaml:"isEnable"`
+	IsCollectLog int `mapstructure:"isCollectLog" json:"isCollectLog" yaml:"isCollectLog"` // 是否配置收集日志(0, 1)
 }
 
 type GlobalConst struct {

@@ -24,6 +24,7 @@ func ListAllLogAlterConf() ([]*conf.AlterConf, error) {
 func ListLogAlterConfByAppNameAndNamespace(ns, appName string) []*conf.AlterConf  {
 	var datas []model.ErrorLogAlterConfig
 	var confs []*conf.AlterConf
+
 	global.GLOBAL_DB.Table(*global.LOG_ALTER_NAME).
 		Where("namespace = ? and app_name = ?", ns, appName).Find(&datas)
 
@@ -40,6 +41,7 @@ func ListLogAlterConfByAppNameAndNamespace(ns, appName string) []*conf.AlterConf
 			Namespace: data.Namespace,
 			EnableStore: data.EnableStore,
 			IsEnable: data.IsEnable,
+			IsCollectLog: data.IsCollectLog,
 		}
 		ignores := data.Ignores
 		errs := data.Errs

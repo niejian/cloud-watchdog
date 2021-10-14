@@ -3,6 +3,7 @@
 package es
 
 import (
+	"cloud-watchdog/common"
 	"cloud-watchdog/config"
 	"cloud-watchdog/global"
 	"cloud-watchdog/model"
@@ -88,16 +89,23 @@ func getIndice(client *elastic.Client, appName string) string {
 	if !exists {
 		zapLog.LOGGER().Info("索引：[" + indexName + "], 不存在")
 		// 创建索引
-		createIndice(client, indexName)
+		createIndice(client, indexName, "")
 	}
 
 	return indexName
 }
 
-// 按日期创建索引
-func createIndice(client *elastic.Client, indexName string) {
+// 创建索引
+func createIndice(client *elastic.Client, indexName, mappingName string) {
+	var indicesCreateResult *elastic.IndicesCreateResult
+	var err error
 
-	indicesCreateResult, err := client.CreateIndex(indexName).BodyString(global.GVA_INDICE_MAPPING).Do(context.Background())
+	if "" == mappingName {
+		indicesCreateResult, err = client.CreateIndex(indexName).BodyString(global.GVA_INDICE_MAPPING).Do(context.Background())
+	} else {
+		indicesCreateResult, err = client.CreateIndex(indexName).BodyString(mappingName).Do(context.Background())
+
+	}
 	if nil != err {
 		zapLog.LOGGER().Error("索引创建失败", zap.String("indexName", indexName), zap.String("err", err.Error()))
 
@@ -128,10 +136,83 @@ func InsertDocument(client *elastic.Client, vo *model.ExceptionStore) error {
 		zapLog.LOGGER().Error("添加数据失败 %v ", zap.String("err", err.Error()))
 		return err
 	}
-	log.Printf("数据添加成功")
-zapLog.LOGGER().Info("数据添加成功", zap.String("Indexed", indexName + " " +create.Id),
+	zapLog.LOGGER().Info("数据添加成功", zap.String("Indexed", indexName + " " +create.Id),
 	zap.String("index", create.Index), zap.String("type", create.Type))
 	log.Printf("Indexed %v %s to index %s, type %s\n", indexName, create.Id, create.Index, create.Type)
 	return nil
+}
+
+//createIndiceByDate doc
+//@Description: 按天创建索引
+//@Author niejian
+//@Date 2021-10-09 13:37:42
+//@param client
+//@param indexName
+func createIndiceByDate(client *elastic.Client, indexName string)  {
+	date := common.FormatDate(common.TIME_DATE_FORMAT)
+	indexName = fmt.Sprintf("%s_%s", indexName, date)
+	indicesCreateResult, err := client.CreateIndex(indexName).BodyString(global.LOG_COLLECT_INDICE_MAPPING).Do(context.Background())
+	if nil != err {
+		zapLog.LOGGER().Error("索引创建失败", zap.String("indexName", indexName), zap.String("err", err.Error()))
+
+		//log.Fatalf("创建索引：%v 失败：%v", indexName, err)
+	}
+
+	if !indicesCreateResult.Acknowledged {
+		zapLog.LOGGER().Error("索引创建失败", zap.String("indexName", indexName), zap.String("err", err.Error()))
+	} else {
+		zapLog.LOGGER().Info("索引创建成功", zap.String("indexName", indexName))
+	}
+}
+
+//InsertLogContent doc
+//@Description: 插入日志
+//@Author niejian
+//@Date 2021-10-09 13:50:01
+//@param client
+//@param vo
+//@param appName
+//@return error
+func InsertLogContent(client *elastic.Client, vo *model.LogContent, appName string) error {
+	indexName := getDateIndice(client, appName)
+	ctx := context.Background()
+	create, err := client.Index().
+		Index(indexName).
+		BodyJson(vo).
+		Do(ctx)
+	if err != nil {
+		zapLog.LOGGER().Error("添加数据失败", zap.String("err", err.Error()))
+		return err
+	}
+	zapLog.LOGGER().Info("数据添加成功", zap.String("Indexed", indexName + " " +create.Id),
+		zap.String("index", create.Index), zap.String("type", create.Type))
+	//log.Printf("Indexed %v %s to index %s, type %s\n", indexName, create.Id, create.Index, create.Type)
+	return nil
+}
+
+//getDateIndice doc
+//@Description: 判断日志索引是否存在,如果不存在则创建
+//@Author niejian
+//@Date 2021-10-09 13:50:13
+//@param client
+//@param appName
+//@return string
+func getDateIndice(client *elastic.Client, appName string) string {
+	appName = strings.ReplaceAll(appName, "-", "_")
+	// appName 添加日期
+	date := common.FormatDate(common.TIME_DATE_FORMAT)
+	indexName := fmt.Sprintf("%s%s%s%s", global.LOG_COLLECT_INDICE_NAME_PREFIX, appName, "_", date)
+
+	exists, err := client.IndexExists(indexName).Do(context.Background())
+	if err != nil {
+		zapLog.LOGGER().Error("es 连接失败", zap.String("err", err.Error()))
+	}
+
+	if !exists {
+		zapLog.LOGGER().Info("索引：[" + indexName + "], 不存在")
+		// 创建索引
+		createIndice(client, indexName, global.LOG_COLLECT_INDICE_MAPPING)
+	}
+	return indexName
 }
 
