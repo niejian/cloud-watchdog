@@ -105,6 +105,13 @@ func doLogCollector(logFileName, appName, namespace , linkFileName string) {
 			continue
 		}
 
+		tailErr := line.Err
+		if tailErr != nil {
+			zapLog.LOGGER().Error("tail 异常,重试", zap.Error(tailErr),
+				zap.String("namespace", namespace), zap.String("appname", appName))
+
+			continue
+		}
 		text := line.Text
 		//k8s 日志
 		var k8sLogModel model.K8sLogModel
@@ -128,17 +135,17 @@ func doLogCollector(logFileName, appName, namespace , linkFileName string) {
 		}
 		logContent := buffer.String()
 		// 发送数据至elastic search
-		//go func() {
-		//	defer func() {
-		//		if err := recover(); err != nil {
-		//			zapLog.LOGGER().Error("saveLogContent panic, prepare recovery", zap.Any("err", err))
-		//			time.Sleep(1 * time.Second)
-		//			saveLogContent(logContent, appName, podName)
-		//		}
-		//	}()
-		//	saveLogContent(logContent, appName, podName)
-		//}()
-		saveLogContent(logContent, appName, podName)
+		go func() {
+			defer func() {
+				if err := recover(); err != nil {
+					zapLog.LOGGER().Error("saveLogContent panic, prepare recovery", zap.Any("err", err))
+					time.Sleep(1 * time.Second)
+					saveLogContent(logContent, appName, podName)
+				}
+			}()
+			saveLogContent(logContent, appName, podName)
+		}()
+		//saveLogContent(logContent, appName, podName)
 		// buffer置空
 		buffer.Reset()
 
@@ -156,6 +163,11 @@ func saveLogContent(content, appName, podName string) {
 		zapLog.LOGGER().Error("日志数据为空", zap.String("podName", podName))
 		return
 	}
+
+	if strings.Contains(*global.K8S_LOG_DIR, podName) {
+		podName = strings.ReplaceAll(*global.K8S_LOG_DIR, podName, "")
+	}
+
 	vo := &model.LogContent{
 		Message:    content,
 		Timestamp: time.Now(),
@@ -180,7 +192,7 @@ func tailLogFile(logFileName string) (*tail.Tail, error) {
 	return tail.TailFile(logFileName, tail.Config{
 		ReOpen:    true,                                 // 文件被移除或被打包，需要重新打开
 		Follow:    true,                                 // 实时跟踪
-		Location:  &tail.SeekInfo{Offset: 0, Whence: 2}, // 如果程序出现异常，保存上次读取的位置，避免重新读取。 whence，从哪开始：0从头，1当前，2末尾
+		Location:  &tail.SeekInfo{Offset: 0, Whence: 1}, // 如果程序出现异常，保存上次读取的位置，避免重新读取。 whence，从哪开始：0从头，1当前，2末尾
 		MustExist: false,                                // 如果文件不存在，是否推出程序，false是不退出
 		Poll:      true,
 	})
