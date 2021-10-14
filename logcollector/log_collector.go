@@ -77,7 +77,7 @@ func doLogCollector(logFileName, appName, namespace , linkFileName string) {
 	tailLog, err := tailLogFile(logFileName)
 	zapLog.LOGGER().Debug("doLogCollector 开始收集日志", zap.String("appName", appName), zap.String("logFileName", logFileName))
 	if nil != err {
-		zapLog.LOGGER().Error("构造tail对象失败，", zap.String("err", err.Error()))
+		zapLog.LOGGER().Info("构造tail对象失败，", zap.String("err", err.Error()))
 		return
 	}
 
@@ -107,7 +107,7 @@ func doLogCollector(logFileName, appName, namespace , linkFileName string) {
 
 		tailErr := line.Err
 		if tailErr != nil {
-			zapLog.LOGGER().Error("tail 异常,重试", zap.Error(tailErr),
+			zapLog.LOGGER().Info("tail 异常,重试", zap.Error(tailErr),
 				zap.String("namespace", namespace), zap.String("appname", appName))
 
 			continue
@@ -240,6 +240,8 @@ func getPodNameByLinkFile(linkFileName string) string {
 		podName = names[0]
 		if strings.Contains(*global.K8S_LOG_DIR, podName) {
 			podName = strings.ReplaceAll(*global.K8S_LOG_DIR, podName, "")
+		}else {
+			zapLog.LOGGER().Info("K8S_LOG_DIR: " + *global.K8S_LOG_DIR)
 		}
 	}
 	return podName
