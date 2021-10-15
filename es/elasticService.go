@@ -30,12 +30,14 @@ func InitEs(es *config.Es) (*elastic.Client, error) {
 
 	var client *elastic.Client
 
+	// By default, health checks are run every 60 seconds
+
 	if "" != username && "" != password {
 		client1, err := elastic.NewClient(
 			elastic.SetURL(urls...),
 			elastic.SetBasicAuth(username, password),
-			elastic.SetSniff(true),
-			elastic.SetHealthcheckInterval(10*time.Second),
+			//elastic.SetSniff(true),
+			//elastic.SetHealthcheckInterval(10*time.Second),
 			elastic.SetGzip(true),
 			elastic.SetErrorLog(log.New(os.Stderr, "ELASTIC-ERR-", log.LstdFlags)),
 			elastic.SetInfoLog(log.New(os.Stdout, "ELASTIC-INFO-", log.LstdFlags)),
@@ -53,8 +55,8 @@ func InitEs(es *config.Es) (*elastic.Client, error) {
 	} else {
 		client1, err := elastic.NewClient(
 			elastic.SetURL(urls...),
-			elastic.SetSniff(true),
-			elastic.SetHealthcheckInterval(10*time.Second),
+			//elastic.SetSniff(true),
+			//elastic.SetHealthcheckInterval(10*time.Second),
 			elastic.SetGzip(true),
 			elastic.SetErrorLog(log.New(os.Stderr, "ELASTIC-ERR-", log.LstdFlags)),
 			elastic.SetInfoLog(log.New(os.Stdout, "ELASTIC-INFO-", log.LstdFlags)),
