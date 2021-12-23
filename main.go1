@@ -1,0 +1,40 @@
+package main
+
+import (
+	"cloud-watchdog/initialize"
+	"fmt"
+	"os"
+	"strings"
+)
+
+func init1() {
+
+	// 获取环境变量信息
+	env := os.Getenv("ENV")
+	if "" == env {
+		env = "dev"
+	}
+	// 获取命令行参数信息，默认环境dev
+	//env := flag.String("env", "dev1", "get env")
+	// 初始化环境
+	initialize.DoInitialize(env)
+
+}
+
+func main() {
+	msg := "com.alibaba.dubbo.remoting.RemotingException: client(url: dubbo://192.168.242.76:32681/cn.com.bluemoo"
+	errTag := "Exception"
+	custErr := ""
+	index := strings.Index(msg, errTag+":")
+	if index > 0 {
+		msg := ""
+		s := msg[0:index]
+		if len(s) > 0 {
+			split := strings.Split(s, ".")
+			length := len(split)
+			custErr = split[length - 1] + errTag
+		}
+	}
+	fmt.Println(custErr)
+
+}

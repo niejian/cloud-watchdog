@@ -6,6 +6,7 @@ import (
 	conf "cloud-watchdog/config"
 	"cloud-watchdog/global"
 	"cloud-watchdog/model"
+	"fmt"
 	"strings"
 )
 
@@ -24,8 +25,10 @@ func ListAllLogAlterConf() ([]*conf.AlterConf, error) {
 func ListLogAlterConfByAppNameAndNamespace(ns, appName string) []*conf.AlterConf  {
 	var datas []model.ErrorLogAlterConfig
 	var confs []*conf.AlterConf
+	// appName like方式查询
+	appName = fmt.Sprintf("%s%s", appName, "%")
 	global.GLOBAL_DB.Table(*global.LOG_ALTER_NAME).
-		Where("namespace = ? and app_name = ?", ns, appName).Find(&datas)
+		Where("namespace = ? and app_name like ?", ns, appName).Find(&datas)
 
 	if len(datas) <= 0 {
 		return nil

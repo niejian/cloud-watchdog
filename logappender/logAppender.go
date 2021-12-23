@@ -144,12 +144,15 @@ func tailLog(logFileName, namespace, appName string, c *cache.Cache)  {
 						if errTag == "Exception"{
 							// 拿到具体的异常信息
 							index := strings.Index(msg, errTag+":")
-							s := msg[0:index]
-							if len(s) > 0 {
-								split := strings.Split(s, ".")
-								length := len(split)
-								custErr = split[length - 1] + errTag
+							if index > 0 && len(msg) > 0{
+								s := msg[0:index]
+								if len(s) > 0 {
+									split := strings.Split(s, ".")
+									length := len(split)
+									custErr = split[length - 1] + errTag
+								}
 							}
+
 						}else {
 							custErr = errTag
 						}
