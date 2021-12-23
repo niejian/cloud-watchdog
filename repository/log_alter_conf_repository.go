@@ -26,13 +26,16 @@ func ListLogAlterConfByAppNameAndNamespace(ns, appName string) []*conf.AlterConf
 	var datas []model.ErrorLogAlterConfig
 	var confs []*conf.AlterConf
 	// appName like方式查询
+	// 使用helm方式部署,appName带xxx-v1
 	appName = fmt.Sprintf("%s%s", appName, "%")
 	global.GLOBAL_DB.Table(*global.LOG_ALTER_NAME).
-		Where("namespace = ? and app_name like ?", ns, appName).Find(&datas)
+		Where("namespace = ? and app_name like ? and is_enable=1", ns, appName).Find(&datas)
 
 	if len(datas) <= 0 {
 		return nil
 	}
+
+
 
 	for _, data := range datas {
 		conf := &conf.AlterConf{

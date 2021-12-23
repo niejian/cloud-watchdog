@@ -162,12 +162,21 @@ func tailLog(logFileName, namespace, appName string, c *cache.Cache)  {
 						break
 					}
 				}
-				if hasExp && "" != msg {
+				if hasExp && "" != msg &&  "" != custErr{
 					lock.Lock()
 					zapLog.LOGGER().Debug("", zap.String("msg", msg))
-					md5Str := common.Md5Str(msg)
-					_, isExist := c.Get(md5Str)
-					if !isExist && "" != msg {
+					isIgnore := isIgnoreMsg(msg, conf)
+					if isIgnore {
+						msg = ""
+					}
+					md5Str := ""
+					isExist := true
+					if "" != msg {
+						md5Str = common.Md5Str(msg)
+						_, isExist = c.Get(md5Str)
+					}
+
+					if !isExist && "" != msg &&  "" != custErr{
 						c.Set(md5Str, "a", cache.DefaultExpiration)
 						alarmMsg := convertWxchatMsg(custErr, appName, msg)
 						common.SendMsgUtil(alarmMsg, conf)
@@ -190,6 +199,26 @@ func tailLog(logFileName, namespace, appName string, c *cache.Cache)  {
 		})
 
 	}
+}
+
+/*是否为忽略消息*/
+func isIgnoreMsg(msg string, c *config.AlterConf) bool {
+	ignores := c.Ignores
+	isIgnore := false
+	if "" != msg && len(ignores) > 0 {
+		// 判断是否包含忽略异常
+		for _, ignoreEx := range ignores {
+
+			if "" != ignoreEx && strings.Contains(msg, ignoreEx) {
+				// 当前msg包含忽略异常关键字，将msg置空
+				msg = ""
+				zapLog.LOGGER().Info("当前消息包含忽略异常, 不予发送 ",  zap.String("ignore", ignoreEx))
+				return true
+			}
+		}
+	}
+
+	return  isIgnore
 }
 
 func convertWxchatMsg(custErr, appName, msg string) string {
