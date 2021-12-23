@@ -241,7 +241,7 @@ func getPodNameByLinkFile(linkFileName string) string {
 		if strings.Contains(*global.K8S_LOG_DIR, podName) {
 			podName = strings.ReplaceAll(*global.K8S_LOG_DIR, podName, "")
 		}else {
-			zapLog.LOGGER().Info("K8S_LOG_DIR: " + *global.K8S_LOG_DIR)
+			zapLog.LOGGER().Info("K8S_LOG_DIR: " + *global.K8S_LOG_DIR + ", podName:" + podName)
 		}
 	}
 	return podName

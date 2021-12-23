@@ -33,6 +33,10 @@ exclude-ns:
   - prd-
   - istio-
   - apollo
+  - nacos-
+  - logstash
+  - loki
+  - loki-
 es:
   urls:
     - http://192.168.243.16:9200

@@ -8,21 +8,23 @@ import (
 	"cloud-watchdog/logappender"
 	"cloud-watchdog/logcollector"
 	"cloud-watchdog/zapLog"
-	"github.com/fsnotify/fsnotify"
-	"github.com/patrickmn/go-cache"
-	"go.uber.org/zap"
 	"path/filepath"
 	"strings"
 	"sync"
+
+	"github.com/fsnotify/fsnotify"
+	"github.com/patrickmn/go-cache"
+	"go.uber.org/zap"
 )
 
 // 异常统计map
 var fileMap sync.Map
 var namespaceMap sync.Map
+
 // 日志收集统计map
 var logCollectorMap sync.Map
 
-func ListenAppLogV3(linkFileName string, c *cache.Cache)  {
+func ListenAppLogV3(linkFileName string, c *cache.Cache) {
 	defer func() {
 		if err := recover(); err != nil {
 			zapLog.LOGGER().Error("ListenAppLogV3 recovery", zap.Any("err", err))
@@ -34,8 +36,8 @@ func ListenAppLogV3(linkFileName string, c *cache.Cache)  {
 
 }
 
-func SplitNamespaceAndAppName(linkFileName string) (string, string, error)  {
-	var namespace  = ""
+func SplitNamespaceAndAppName(linkFileName string) (string, string, error) {
+	var namespace = ""
 	var appName = ""
 	//var err error
 	var key = common.Md5Str(linkFileName)
@@ -52,14 +54,14 @@ func SplitNamespaceAndAppName(linkFileName string) (string, string, error)  {
 			zapLog.LOGGER().Error("获取命名空间或者项目名失败")
 		}
 		if "" != namespace && "" != appName {
-			namespaceMap.Store(key, namespace + "," + appName)
+			namespaceMap.Store(key, namespace+","+appName)
 		}
 	}
 
 	return namespace, appName, nil
 }
 
-func getAppNameAndNamespace(linkFileName string, c *cache.Cache)  {
+func getAppNameAndNamespace(linkFileName string, c *cache.Cache) {
 	//var namespace  = ""
 	//var appName = ""
 	namespace, appName, _ := SplitNamespaceAndAppName(linkFileName)
@@ -74,7 +76,6 @@ func getAppNameAndNamespace(linkFileName string, c *cache.Cache)  {
 	// 日志收集:判断文件是否被监听
 	_, isCollect := logCollectorMap.LoadOrStore(linkFileName, 1)
 
-
 	// 该文件没被监听
 	if !loaded {
 		doLogAppender(namespace, appName, linkFileName, c)
@@ -84,7 +85,7 @@ func getAppNameAndNamespace(linkFileName string, c *cache.Cache)  {
 	}
 }
 
-func doLogAppender(namespace, appName, linkFileName string, c *cache.Cache)  {
+func doLogAppender(namespace, appName, linkFileName string, c *cache.Cache) {
 
 	// 通过连接文件名获取到真正的文件信息 /var/lib/docker/containers/cid/cid-json.log
 	// 获取真实的docker日志文件信息
@@ -93,7 +94,7 @@ func doLogAppender(namespace, appName, linkFileName string, c *cache.Cache)  {
 		zapLog.LOGGER().Error("linkfile：" + linkFileName + ", 无法获取到实际文件信息")
 		return
 	}
-	zapLog.LOGGER().Debug("dockerLogFileName: "+ dockerLogFileName)
+	zapLog.LOGGER().Debug("dockerLogFileName: " + dockerLogFileName)
 	logappender.LogAppender(namespace, appName, dockerLogFileName, c)
 
 }
@@ -115,15 +116,14 @@ func ListenLinkfile(c *cache.Cache) {
 
 	/*
 
-	https://github.com/fsnotify/fsnotify/issues?q=Symlinks
-	https://blog.csdn.net/u013536232/article/details/104123861
-	在linux环境中，fsnotify无法追踪到连接文件
-	这里需要做的是需要将这个文件夹中所有文件全部拿出来，每个文件都设置一个watcher
-	 */
+		https://github.com/fsnotify/fsnotify/issues?q=Symlinks
+		https://blog.csdn.net/u013536232/article/details/104123861
+		在linux环境中，fsnotify无法追踪到连接文件
+		这里需要做的是需要将这个文件夹中所有文件全部拿出来，每个文件都设置一个watcher
+	*/
 
 	// 监听整个目录
 	//watcher.a
-
 
 	err = watcher.Add(*global.K8S_LOG_DIR)
 	zapLog.LOGGER().Info("监听文件：" + *global.K8S_LOG_DIR)
@@ -173,7 +173,6 @@ func ListenLinkfile(c *cache.Cache) {
 		}
 	}()
 
-
 	<-done
 }
 
@@ -189,10 +188,9 @@ func GetDockerLogFilePath(linkFileName string) string {
 	if "" == containerId {
 		return ""
 	}
+
 	// 获取真实的docker日志文件信息
-	dockerLogFileName := *global.Docker_Log_Dir + containerId + string(filepath.Separator) +containerId + "-json.log"
+	dockerLogFileName := *global.Docker_Log_Dir + containerId + string(filepath.Separator) + containerId + "-json.log"
 	return dockerLogFileName
 
 }
-
-
