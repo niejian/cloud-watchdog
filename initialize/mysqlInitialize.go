@@ -22,8 +22,22 @@ func MysqlInitialize()  {
 	if err != nil {
 		zapLog.LOGGER().Error("数据库连接失败，请检查配置", zap.String("err", err.Error()))
 		panic("数据库连接失败，请检查配置")
+		os.Exit(0)
 	}
 	admin := config.Mysql
+	if "" == admin.Username {
+		zapLog.LOGGER().Error("请配置数据库账号", zap.String("err", err.Error()))
+		os.Exit(0)
+	}
+
+	if "" == admin.Password {
+		zapLog.LOGGER().Error("请配置数据库密码", zap.String("err", err.Error()))
+		os.Exit(0)
+	}
+	if "" == admin.Dbname {
+		zapLog.LOGGER().Error("请配置库名", zap.String("err", err.Error()))
+		os.Exit(0)
+	}
 	mysqlConfig := mysql.Config{
 		DSN:                       admin.Username + ":" + admin.Password + "@(" + admin.Path + ")/" + admin.Dbname + "?" + admin.Config, // DSN data source name
 		DefaultStringSize:         191,                                                                                                  // string 类型字段的默认长度
