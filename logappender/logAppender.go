@@ -13,6 +13,7 @@ import (
 	"github.com/hpcloud/tail"
 	"github.com/patrickmn/go-cache"
 	"go.uber.org/zap"
+	"os"
 	"strings"
 	"sync"
 	"time"
@@ -114,8 +115,6 @@ func tailLog(logFileName, namespace, appName string, c *cache.Cache)  {
 		hasExp := false
 		//custErr := ""
 		zapLog.LOGGER().Debug("", zap.String("msg", msg))
-
-
 
 		// 1秒没操作，判断是需要发送消息
 		time.AfterFunc(1*time.Second, func() {
@@ -223,14 +222,15 @@ func isIgnoreMsg(msg string, c *config.AlterConf) bool {
 
 func convertWxchatMsg(custErr, appName, msg string) string {
 	var buffer bytes.Buffer
+	// 判断当前环境
+	env := os.Getenv("q")
+	buffer.WriteString("当前环境：" + env + "\n")
 	buffer.WriteString("应用名称：" + appName + "\n")
 	buffer.WriteString("时间：" + common.FormatDate("2006-01-02 15:04:05") + "\n")
 	buffer.WriteString("异常信息：" + custErr + "\n")
 	buffer.WriteString(msg)
 	alarmMsg := buffer.String()
-
 	return alarmMsg
-
 }
 
 //convertErrMsg doc

@@ -100,11 +100,13 @@ spec:
             - name: ES_PASSWORD
               value: 'GoodEsDbStar'
             - name: MYSQL_URLS
-              value: '192.168.50.23:8098'
+              value: '192.168.50.96:8096'
             - name: MYSQL_USERNAME
-              value: 'app_monitor'
+              value: 'app_ginvueadmin'
             - name: MYSQL_PASSWORD
-              value: 'all8^#XAGRu8O'
+              value: 'MqT2ivmkTxw1dL8T'
+            - name: MYSQL_DB_NAME
+              value: 'ginvueadmin'
             - name: CONF_CONSUMER_FILE_PATH
               value: '/data/watchdog/watchdog-cloud-bin/resources/client-pro.yml'
       volumes:
