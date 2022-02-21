@@ -223,7 +223,7 @@ func isIgnoreMsg(msg string, c *config.AlterConf) bool {
 func convertWxchatMsg(custErr, appName, msg string) string {
 	var buffer bytes.Buffer
 	// 判断当前环境
-	env := os.Getenv("q")
+	env := os.Getenv("watchdog-env")
 	buffer.WriteString("当前环境：" + env + "\n")
 	buffer.WriteString("应用名称：" + appName + "\n")
 	buffer.WriteString("时间：" + common.FormatDate("2006-01-02 15:04:05") + "\n")

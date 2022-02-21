@@ -90,13 +90,17 @@ spec:
             - name: ES_PASSWORD
               value: 'GreatAge'
             - name: MYSQL_URLS
-              value: '192.168.242.105:3306'
+              value: '192.168.240.119:3338'
             - name: MYSQL_USERNAME
-              value: 'apollo'
+              value: 'app_ginvueadmin'
             - name: MYSQL_PASSWORD
-              value: 'qq123123'
+              value: 'vPb4qZjYkZuLxWg4'
             - name: CONF_CONSUMER_FILE_PATH
               value: '/data/watchdog/watchdog-cloud-bin/resources/client-uat.yml'
+            - name: watchdog-env
+              value: 'PRD'
+            - name: MYSQL_DB_NAME
+              value: 'ginvueadmin'
 
       volumes:
         - name: kube-manage

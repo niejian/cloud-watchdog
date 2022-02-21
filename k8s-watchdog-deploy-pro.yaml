@@ -107,6 +107,8 @@ spec:
               value: 'MqT2ivmkTxw1dL8T'
             - name: MYSQL_DB_NAME
               value: 'ginvueadmin'
+            - name: watchdog-env
+              value: 'PRD'
             - name: CONF_CONSUMER_FILE_PATH
               value: '/data/watchdog/watchdog-cloud-bin/resources/client-pro.yml'
       volumes:
