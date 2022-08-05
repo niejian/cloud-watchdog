@@ -62,12 +62,23 @@ spec:
         app: k8s-watchdog
       name: k8s-watchdog
     spec:
+      tolerations:
+        - key: bluemoon.com.cn/gzmoonhouse # 使daemonset调度到设置这个污点的节点上去
+          operator: Exists
+          effect: NoSchedule
       imagePullSecrets:
         - name: harbor
       containers:
         - name: k8s-watchdog-pod
           imagePullPolicy: Always
-          image: harbor.bluemoon.com.cn/cloud-platform/k8s-watchdog:v3
+          image: harbor.bluemoon.com.cn/cloud-platform/k8s-watchdog:v6
+          resources:
+            limits:
+              memory: 50Mi
+              cpu: '1'
+            requests:
+              cpu: 100m
+              memory: 50Mi
           volumeMounts:
             - mountPath: /root/.kube
               name: kube-manage
@@ -89,11 +100,15 @@ spec:
             - name: ES_PASSWORD
               value: 'GoodEsDbStar'
             - name: MYSQL_URLS
-              value: '192.168.32.46:3306'
+              value: '192.168.50.96:8096'
             - name: MYSQL_USERNAME
-              value: 'app_monitor'
+              value: 'app_ginvueadmin'
             - name: MYSQL_PASSWORD
-              value: 'all8^#XAGRu8O'
+              value: 'MqT2ivmkTxw1dL8T'
+            - name: MYSQL_DB_NAME
+              value: 'ginvueadmin'
+            - name: watchdog-env
+              value: 'PRD'
             - name: CONF_CONSUMER_FILE_PATH
               value: '/data/watchdog/watchdog-cloud-bin/resources/client-pro.yml'
       volumes:

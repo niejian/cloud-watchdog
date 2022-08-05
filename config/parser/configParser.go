@@ -64,11 +64,14 @@ func SysConfigParser() (*config.SysConfig, error) {
 		mysqlUrl := os.Getenv("MYSQL_URLS")
 		mysqlUsername := os.Getenv("MYSQL_USERNAME")
 		mysqlPassword := os.Getenv("MYSQL_PASSWORD")
+		// 设置库名
+		mysqlDbName := os.Getenv("MYSQL_DB_NAME")
 
 		if "" != mysqlUrl && "" != mysqlUsername && "" != mysqlPassword {
 			sysConfig.Mysql.Path = mysqlUrl
 			sysConfig.Mysql.Username = mysqlUsername
 			sysConfig.Mysql.Password = mysqlPassword
+			sysConfig.Mysql.Dbname = mysqlDbName
 		}
 
 		fmt.Println("读取k8s配置信息 ")
